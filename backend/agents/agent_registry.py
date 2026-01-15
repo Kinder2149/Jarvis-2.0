@@ -1,3 +1,5 @@
+import os
+
 from backend.agents.base_agent import BaseAgent
 
 _BASE_AGENT = None
@@ -11,8 +13,13 @@ def get_base_agent() -> BaseAgent:
     global _BASE_AGENT
 
     if _BASE_AGENT is None:
+        agent_id = os.environ.get("JARVIS_BASE_AGENT_ID")
+        if not agent_id:
+            raise RuntimeError(
+                "JARVIS_BASE_AGENT_ID manquante dans l'environnement"
+            )
         _BASE_AGENT = BaseAgent(
-            agent_id="ag_019ba8ca8eaa76288371e13fb962d1ed",
+            agent_id=agent_id,
             name="Agent de Base",
             role="Assistant générique",
             description="Agent neutre servant de modèle pour tous les futurs agents.",

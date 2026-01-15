@@ -1,6 +1,10 @@
 from backend.ia.mistral_client import MistralClient
 
 
+class InvalidRuntimeMessageError(ValueError):
+    pass
+
+
 class BaseAgent:
     """
     Implémentation concrète du modèle d’agent de base.
@@ -32,9 +36,28 @@ class BaseAgent:
         Point d’entrée unique de l’agent.
         """
 
-        full_context = [
-            {"role": "system", "content": self.system_prompt},
-            *messages,
-        ]
+        if not isinstance(messages, list):
+            raise InvalidRuntimeMessageError("messages must be a list")
 
-        return self.client.send(full_context)
+        validated_messages: list[dict] = []
+        for idx, msg in enumerate(messages):
+            if not isinstance(msg, dict):
+                raise InvalidRuntimeMessageError(
+                    f"messages[{idx}] must be an object"
+                )
+
+            role = msg.get("role")
+            content = msg.get("content")
+
+            if role != "user":
+                raise InvalidRuntimeMessageError(
+                    f"messages[{idx}].role must be 'user'"
+                )
+            if not isinstance(content, str) or not content.strip():
+                raise InvalidRuntimeMessageError(
+                    f"messages[{idx}].content must be a non-empty string"
+                )
+
+            validated_messages.append({"role": "user", "content": content})
+
+        return self.client.send(validated_messages)
