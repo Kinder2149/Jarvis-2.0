@@ -49,15 +49,15 @@ class BaseAgent:
             role = msg.get("role")
             content = msg.get("content")
 
-            if role != "user":
+            if role not in ("user", "assistant"):
                 raise InvalidRuntimeMessageError(
-                    f"messages[{idx}].role must be 'user'"
+                    f"messages[{idx}].role must be 'user' or 'assistant'"
                 )
             if not isinstance(content, str) or not content.strip():
                 raise InvalidRuntimeMessageError(
                     f"messages[{idx}].content must be a non-empty string"
                 )
 
-            validated_messages.append({"role": "user", "content": content})
+            validated_messages.append({"role": role, "content": content})
 
         return self.client.send(validated_messages)
