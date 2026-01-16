@@ -7,7 +7,7 @@ préparée pour évoluer vers un système multi-agents.
 
 - frontend/ : UI de chat simple
 - backend/
-  - api : interface HTTP
+  - api.py : interface HTTP
   - ia : clients IA (Mistral)
   - agents : modèle et implémentations d’agents
 
@@ -17,7 +17,7 @@ préparée pour évoluer vers un système multi-agents.
 
 - **frontend/script.js**
   - Envoie une requête : `POST http://localhost:8000/chat`
-  - Body JSON : `{ "message": "<texte utilisateur>" }`
+  - Body JSON : `{ "message": "<texte utilisateur>", "session_id": "<id optionnel>" }`
 - **backend/app.py**
   - Initialise l’application et monte le routeur API.
 - **backend/api.py**
@@ -26,12 +26,11 @@ préparée pour évoluer vers un système multi-agents.
   - Appelle `agent.handle([{ "role": "user", "content": req.message }])`
 - **backend/agents/agent_registry.py**
   - Fournit un singleton d’agent de base.
-  - Instancie `BaseAgent(...)` avec un `agent_id` codé en dur.
+  - Instancie `BaseAgent(...)` avec un `agent_id` provenant de `JARVIS_BASE_AGENT_ID`.
 - **backend/agents/base_agent.py**
-  - Préfixe le contexte avec un message `system` et transmet au client Mistral.
+  - Valide les messages runtime (`role` ∈ {`user`, `assistant`}) puis transmet au client Mistral.
 - **backend/ia/mistral_client.py**
-  - Tente l’API “Agent” via `beta.conversations.start(...)` selon une variable d’environnement.
-  - Fallback sur `chat.complete(...)` en cas d’échec.
+  - Utilise l’API “Agent” via `beta.conversations.start(...)` (obligatoire si `USE_MISTRAL_AGENT_API=1`).
 
 ### Bloc B — Structure réelle des messages envoyés
 
@@ -39,7 +38,7 @@ préparée pour évoluer vers un système multi-agents.
   - Une liste de messages contenant des objets `{role, content}`.
   - Exemple (forme) : un message `user` avec le texte utilisateur.
 - **Transformation par l’Agent de Base**
-  - Ajout systématique en tête d’un message `{role: "system", content: <instructions>}`.
+  - Validation et normalisation des messages `{role, content}`.
 - **Envoi au fournisseur IA**
   - Même structure de liste `{role, content}` utilisée dans les deux chemins :
     - chemin “Agent” : passé en tant que `inputs`
@@ -50,14 +49,14 @@ préparée pour évoluer vers un système multi-agents.
 - **[Format unique utilisé pour deux API différentes]**
   - Le même format de messages `{role, content}` est envoyé à la fois sur le chemin “Agent” et le chemin “Chat”.
 - **[Rôles observés]**
-  - Les rôles effectivement construits sont `system` (injecté) et `user` (runtime).
+  - Les rôles acceptés côté backend sont `user` et `assistant`.
 - **[Fallback implicite]**
-  - En cas d’exception sur le chemin “Agent”, bascule automatique vers “Chat” sans signalisation fonctionnelle au client.
+  - Pas de fallback “Chat” dans l’implémentation actuelle : en cas d’échec, l’API renvoie une erreur HTTP.
 
 ### Bloc D — Risques long terme si non corrigé
 
 - **[Non-déterminisme de comportement]**
-  - Une même requête peut être traitée soit par le chemin “Agent”, soit par le fallback “Chat”, selon des erreurs ou conditions externes.
+  - Non applicable dans l’implémentation actuelle (pas de fallback).
 - **[Dérive contractuelle]**
   - Si le schéma attendu par l’API “Agent” diffère du format envoyé, le système peut tomber en fallback de manière permanente.
 - **[Observabilité limitée]**
@@ -121,3 +120,30 @@ préparée pour évoluer vers un système multi-agents.
 pip install -r requirements.txt
 uvicorn backend.app:app --reload
 ```
+
+## Variables d’environnement
+
+- `MISTRAL_API_KEY` : obligatoire
+- `JARVIS_BASE_AGENT_ID` : obligatoire (doit exister côté Mistral)
+- `USE_MISTRAL_AGENT_API` : doit être `1` (obligatoire dans l’implémentation actuelle)
+
+## API
+
+- `GET /`
+  - **Réponse** : `{ "status": "Jarvis backend running" }`
+- `POST /chat`
+  - **Body**
+    - `message` (string, requis)
+    - `session_id` (string, optionnel) : si absent, le backend en génère un.
+  - **Réponse 200**
+    - `{ "response": "<texte>", "session_id": "<id>" }`
+  - **Erreurs**
+    - `400` : messages invalides (format/runtime)
+    - `502` : format de réponse upstream invalide
+    - `503` : fournisseur upstream indisponible
+    - `500` : erreur interne
+
+## Docs auto (FastAPI)
+
+- Swagger UI : `http://localhost:8000/docs`
+- OpenAPI JSON : `http://localhost:8000/openapi.json`
