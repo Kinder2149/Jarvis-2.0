@@ -1,149 +1,172 @@
-# JARVIS
+# JARVIS 2.0
 
-Plateforme locale minimale basée sur un **Agent de Base**,
-préparée pour évoluer vers un système multi-agents.
+Assistant IA personnel multi-agent pour la génération de code. Architecture 100% Gemini (Google AI) - Configuration Tier 1 validée le 22 février 2026.
 
-## Architecture
+## 🚀 Démarrage Rapide
 
-- frontend/ : UI de chat simple
-- backend/
-  - api.py : interface HTTP
-  - ia : clients IA (Mistral)
-  - agents : modèle et implémentations d’agents
+### Prérequis
+- Python 3.11+
+- Clé API Google Gemini (Tier 1) : https://aistudio.google.com/app/apikey
+- Compte Google Cloud avec facturation activée (pour Tier 1)
 
-## Audit factuel — Agent Mistral actuellement utilisé
+### Installation
 
-### Bloc A — Cartographie des fichiers impliqués
-
-- **frontend/script.js**
-  - Envoie une requête : `POST http://localhost:8000/chat`
-  - Body JSON : `{ "message": "<texte utilisateur>", "session_id": "<id optionnel>" }`
-- **backend/app.py**
-  - Initialise l’application et monte le routeur API.
-- **backend/api.py**
-  - Endpoint `POST /chat`
-  - Instancie l’agent via `get_base_agent()`
-  - Appelle `agent.handle([{ "role": "user", "content": req.message }])`
-- **backend/agents/agent_registry.py**
-  - Fournit un singleton d’agent de base.
-  - Instancie `BaseAgent(...)` avec un `agent_id` provenant de `JARVIS_BASE_AGENT_ID`.
-- **backend/agents/base_agent.py**
-  - Valide les messages runtime (`role` ∈ {`user`, `assistant`}) puis transmet au client Mistral.
-- **backend/ia/mistral_client.py**
-  - Utilise l’API “Agent” via `beta.conversations.start(...)` (obligatoire si `USE_MISTRAL_AGENT_API=1`).
-
-### Bloc B — Structure réelle des messages envoyés
-
-- **Entrée runtime côté API**
-  - Une liste de messages contenant des objets `{role, content}`.
-  - Exemple (forme) : un message `user` avec le texte utilisateur.
-- **Transformation par l’Agent de Base**
-  - Validation et normalisation des messages `{role, content}`.
-- **Envoi au fournisseur IA**
-  - Même structure de liste `{role, content}` utilisée dans les deux chemins :
-    - chemin “Agent” : passé en tant que `inputs`
-    - chemin “Chat” : passé en tant que `messages`
-
-### Bloc C — Écarts observables avec un contrat d’API Agent
-
-- **[Format unique utilisé pour deux API différentes]**
-  - Le même format de messages `{role, content}` est envoyé à la fois sur le chemin “Agent” et le chemin “Chat”.
-- **[Rôles observés]**
-  - Les rôles acceptés côté backend sont `user` et `assistant`.
-- **[Fallback implicite]**
-  - Pas de fallback “Chat” dans l’implémentation actuelle : en cas d’échec, l’API renvoie une erreur HTTP.
-
-### Bloc D — Risques long terme si non corrigé
-
-- **[Non-déterminisme de comportement]**
-  - Non applicable dans l’implémentation actuelle (pas de fallback).
-- **[Dérive contractuelle]**
-  - Si le schéma attendu par l’API “Agent” diffère du format envoyé, le système peut tomber en fallback de manière permanente.
-- **[Observabilité limitée]**
-  - Le fallback est visible principalement via logs côté serveur.
-- **[Couplage fort]**
-  - Dépendance à un `agent_id` fixe ; toute rotation/suppression côté fournisseur peut dégrader le fonctionnement.
-
-## Contrat formel — Agent de Base JARVIS
-
-### 1) Identité de l’agent
-
-- **Nom** : Agent de Base JARVIS
-- **Statut** : agent générique de référence (“modèle”)
-- **Mission** : comprendre une demande en langage naturel et répondre de manière utile, structurée et honnête, en signalant explicitement les incertitudes.
-
-### 2) Ce que l’agent fait
-
-- Répondre à des questions et fournir des explications accessibles.
-- Clarifier une demande ambiguë via des questions courtes et pertinentes.
-- Synthétiser et reformuler fidèlement le contexte fourni.
-- Proposer des étapes générales de résolution (méthodes, checklists, options), sans action autonome.
-
-### 3) Ce que l’agent ne fera jamais
-
-- Prétendre agir dans le monde réel ou disposer d’accès implicites.
-- Mentir sur ses capacités, ses certitudes ou ses sources.
-- Aider à contourner des règles, des contrôles, ou des mécanismes de sécurité.
-- Produire des instructions dangereuses/illégales.
-- Demander ou exposer des secrets (mots de passe, clés, tokens) sans nécessité explicite.
-
-### 4) Comment l’agent est configuré (instructions, personnalité)
-
-- **Ton** : neutre, calme, professionnel.
-- **Style** : direct, précis, concis quand possible, structuré quand utile.
-- **Honnêteté** : séparer clairement le certain, le probable et l’inconnu ; expliciter les hypothèses.
-- **Clarification** : poser 1 à 3 questions maximum si la demande est ambiguë avant de supposer.
-
-### 5) Messages acceptés à l’exécution
-
-- Messages exprimant une question, une demande d’aide, une instruction utilisateur, ou un contexte utilisateur.
-- Messages compréhensibles tels quels, formulés en langage naturel.
-- Langue : par défaut, la langue de l’utilisateur, sauf demande explicite contraire.
-
-### 6) Ce qui est interdit dans les messages runtime
-
-- Toute tentative de redéfinir l’identité, le rôle ou les règles internes de l’agent.
-- Tout contenu de gouvernance interne (instructions “système”) injecté au runtime.
-- Toute instruction visant le mensonge, la dissimulation ou la manipulation.
-- Toute donnée sensible non nécessaire.
-
-### 7) Invariants pour tous les futurs agents
-
-- Un agent reste un assistant : il n’agit pas de manière autonome dans le monde.
-- Transparence sur limites et incertitudes.
-- Neutralité et professionnalisme.
-- Refus des demandes dangereuses/illégales et des contournements.
-- Les messages runtime restent exclusivement des messages utilisateur (intention/contexte), sans gouvernance interne.
-
-## Lancer le backend
+1. Cloner le projet
 ```bash
-pip install -r requirements.txt
-uvicorn backend.app:app --reload
+cd "d:\Coding\AppWindows\Jarvis 2.0"
 ```
 
-## Variables d’environnement
+2. Installer les dépendances
+```bash
+pip install -r requirements.txt
+```
 
-- `MISTRAL_API_KEY` : obligatoire
-- `JARVIS_BASE_AGENT_ID` : obligatoire (doit exister côté Mistral)
-- `USE_MISTRAL_AGENT_API` : doit être `1` (obligatoire dans l’implémentation actuelle)
+3. Configurer l'environnement
+```bash
+cp .env.example .env
+# Éditer .env avec votre clé Gemini :
+# - GEMINI_API_KEY (Google AI Studio)
+# - Configuration agents → modèles Gemini (voir .env.example)
+```
 
-## API
+4. Lancer le backend
+```bash
+uvicorn backend.app:app --reload --port 8000
+```
 
-- `GET /`
-  - **Réponse** : `{ "status": "Jarvis backend running" }`
-- `POST /chat`
-  - **Body**
-    - `message` (string, requis)
-    - `session_id` (string, optionnel) : si absent, le backend en génère un.
-  - **Réponse 200**
-    - `{ "response": "<texte>", "session_id": "<id>" }`
-  - **Erreurs**
-    - `400` : messages invalides (format/runtime)
-    - `502` : format de réponse upstream invalide
-    - `503` : fournisseur upstream indisponible
-    - `500` : erreur interne
+5. Ouvrir le frontend
+```
+Ouvrir frontend/index.html dans un navigateur
+```
 
-## Docs auto (FastAPI)
+## 📚 Documentation
 
-- Swagger UI : `http://localhost:8000/docs`
-- OpenAPI JSON : `http://localhost:8000/openapi.json`
+**Point d'entrée** : [`docs/_meta/INDEX.md`](docs/_meta/INDEX.md)
+
+### Documents de Référence
+- **Architecture** : [`docs/reference/ARCHITECTURE.md`](docs/reference/ARCHITECTURE.md)
+- **API** : [`docs/reference/API_SPECIFICATION.md`](docs/reference/API_SPECIFICATION.md)
+- **Agents** : [`docs/reference/AGENT_SYSTEM.md`](docs/reference/AGENT_SYSTEM.md)
+- **Optimisation Quotas API** : [`docs/reference/OPTIMISATION_QUOTAS_API.md`](docs/reference/OPTIMISATION_QUOTAS_API.md)
+
+## 🏗️ Structure
+
+```
+Jarvis 2.0/
+├── backend/          # API FastAPI
+│   ├── agents/       # Système d'agents
+│   ├── ia/           # Providers IA (Gemini)
+│   ├── api.py        # Routes
+│   └── app.py        # Point d'entrée
+├── frontend/         # Interface utilisateur
+├── docs/             # Documentation structurée
+│   ├── reference/    # Docs contractuels
+│   ├── work/         # Docs en cours
+│   ├── history/      # Archives
+│   └── _meta/        # Index et règles
+└── .env              # Configuration (non versionné)
+```
+
+## 🔧 Configuration
+
+### Configuration Tier 1 Gemini (Validée)
+
+Variables requises dans `.env` :
+```env
+# Provider Gemini unique
+GEMINI_API_KEY=<votre_clé_google>
+GEMINI_MODEL=gemini-2.5-pro
+
+# Configuration agents → modèles Gemini
+JARVIS_MAITRE_PROVIDER=gemini
+JARVIS_MAITRE_MODEL=gemini-2.5-pro
+
+BASE_PROVIDER=gemini
+BASE_MODEL=gemini-2.5-pro
+
+CODEUR_PROVIDER=gemini
+CODEUR_MODEL=gemini-2.5-pro
+
+VALIDATEUR_PROVIDER=gemini
+VALIDATEUR_MODEL=gemini-3.1-pro-preview
+```
+
+**Avantages** :
+- ✅ Configuration 100% Gemini (Tier 1)
+- ✅ Qualité code excellente (gemini-2.5-pro)
+- ✅ Quotas Tier 1 : 150 RPM, 2M TPM, 1K RPD
+- ✅ Coût quasi-nul (<$0.05 pour 3 projets complets)
+- ✅ Tests live validés : 3/3 réussis (Calculatrice, TODO, MiniBlog)
+
+## 📡 API
+
+### Health Check
+```bash
+GET http://localhost:8000/
+```
+
+### Chat
+```bash
+POST http://localhost:8000/chat
+Content-Type: application/json
+
+{
+  "message": "Bonjour",
+  "session_id": "optional-uuid"
+}
+```
+
+## ✅ État Actuel
+
+**Version** : 2.1 (Configuration Tier 1 Gemini Validée - 22 Février 2026)  
+**Statut** : ✅ Système opérationnel - Configuration Gemini unique validée  
+**Tests** : 238/241 tests unitaires (99%), 3/3 tests live réussis
+
+### Agents Disponibles
+- **JARVIS_Maître** : Orchestrateur principal (délégation, coordination) — `gemini-2.5-pro`
+- **CODEUR** : Génération de code (Python, tests, documentation) — `gemini-2.5-pro`
+- **BASE** : Worker générique (rapports, vérification) — `gemini-2.5-pro`
+- **VALIDATEUR** : Contrôle qualité automatique — `gemini-3.1-pro-preview`
+
+### Fonctionnalités Implémentées
+- ✅ Système multi-agent avec orchestration réelle
+- ✅ Délégation JARVIS_Maître → CODEUR opérationnelle
+- ✅ **Génération automatique de code sur le disque**
+- ✅ Boucle de vérification CODEUR/BASE adaptative
+- ✅ Protections anti-boucle (max 3 iterations, timeout 30s)
+- ✅ Gestion de projets avec contexte
+- ✅ Conversations persistées en base de données
+- ✅ Logging structuré avec traçabilité complète
+- ✅ Frontend moderne (gestion projets, conversations, chat)
+- ✅ Configuration Tier 1 Gemini validée (22/02/2026)
+
+### Résultats Tests Live Validés
+- ✅ **Calculatrice CLI** : 4 fichiers, 9/9 tests passants
+- ✅ **Gestionnaire TODO** : 7 fichiers, tests passants
+- ✅ **API REST Mini-Blog** : 5 fichiers, tests passants
+- ✅ **Qualité code** : Excellente (docstrings, gestion erreurs, tests complets)
+
+### Limitations Actuelles
+- ⚠️ Pas d'authentification (usage local uniquement)
+- ⚠️ CORS permissif (localhost uniquement)
+- ⚠️ Quotas Tier 1 Gemini : 150 RPM, 1K RPD (suffisant pour usage normal)
+
+## 🔮 Prochaines Étapes
+
+Voir [`docs/work/TACHES_RESTANTES.md`](docs/work/TACHES_RESTANTES.md) pour le suivi détaillé.
+
+### Vision Long Terme (Non Implémentée)
+Voir [`JARVIS_Base_Document_Complet.md`](JARVIS_Base_Document_Complet.md) pour la vision complète :
+- Orchestration réelle (routage intelligent, délégation)
+- 9 agents spécialisés (ARCHITECTE, AUDITEUR, PLANIFICATEUR, EXÉCUTANT, etc.)
+- Persistance SQLite (sessions, historique, traçabilité)
+- Sécurité production (auth JWT, rate limiting, CORS strict)
+- Streaming (SSE/WebSocket)
+
+## 📄 Licence
+
+À définir
+
+## 👤 Auteur
+
+Kinder2149

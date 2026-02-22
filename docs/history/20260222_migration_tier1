@@ -1,0 +1,476 @@
+# Analyse Coût Tier 1 Gemini - Usage Complet JARVIS 2.0
+
+**Date** : 22 février 2026  
+**Objectif** : Chiffrer le coût réel d'un passage complet en Tier 1 Gemini  
+**Périmètre** : Usage production + tests + développement
+
+---
+
+## 📊 Analyse Usage Actuel
+
+### Tests Live Effectués (Aujourd'hui)
+
+| Test | Requêtes | Input Tokens | Output Tokens | Durée |
+|------|----------|--------------|---------------|-------|
+| **Calculatrice** | ~5 | ~15,000 | ~6,000 | 2min 13s |
+| **TODO** (estimé) | ~7 | ~25,000 | ~10,000 | ~3min |
+| **MiniBlog** (estimé) | ~6 | ~20,000 | ~8,000 | ~3min |
+| **TOTAL** | ~18 | ~60,000 | ~24,000 | ~8min |
+
+**Observation** : 18 requêtes pour 3 projets = **6 requêtes/projet en moyenne**
+
+---
+
+## 💰 Tarification Gemini API Tier 1
+
+### Modèles Disponibles (Tier 1)
+
+| Modèle | Input ($/1M tokens) | Output ($/1M tokens) | Contexte | RPM | RPD |
+|--------|---------------------|----------------------|----------|-----|-----|
+| **Gemini 2.0 Flash** | $0.075 | $0.30 | 1M | 10 | 100 |
+| **Gemini 1.5 Flash** | $0.075 | $0.30 | 1M | 10 | 100 |
+| **Gemini 1.5 Pro** | $1.25 | $5.00 | 2M | 5 | 50 |
+| **Gemini 3 Flash** | $0.075 | $0.30 | 1M | 10 | 100 |
+
+**Source** : https://ai.google.dev/pricing
+
+---
+
+## 🧮 Calcul Coût par Projet
+
+### Projet Simple (Calculatrice)
+
+**Tokens utilisés** :
+- Input : ~15,000 tokens
+- Output : ~6,000 tokens
+
+**Coût avec Gemini 2.0 Flash** :
+```
+Input  : 15,000 × $0.075 / 1,000,000 = $0.001125
+Output : 6,000 × $0.30 / 1,000,000   = $0.001800
+TOTAL  : $0.002925 ≈ $0.003 (0.3 centime)
+```
+
+---
+
+### Projet Moyen (TODO)
+
+**Tokens estimés** :
+- Input : ~25,000 tokens
+- Output : ~10,000 tokens
+
+**Coût avec Gemini 2.0 Flash** :
+```
+Input  : 25,000 × $0.075 / 1,000,000 = $0.001875
+Output : 10,000 × $0.30 / 1,000,000  = $0.003000
+TOTAL  : $0.004875 ≈ $0.005 (0.5 centime)
+```
+
+---
+
+### Projet Complexe (MiniBlog)
+
+**Tokens estimés** :
+- Input : ~20,000 tokens
+- Output : ~8,000 tokens
+
+**Coût avec Gemini 2.0 Flash** :
+```
+Input  : 20,000 × $0.075 / 1,000,000 = $0.001500
+Output : 8,000 × $0.30 / 1,000,000   = $0.002400
+TOTAL  : $0.003900 ≈ $0.004 (0.4 centime)
+```
+
+---
+
+## 📈 Projections Usage Mensuel
+
+### Scénario 1 : Usage Léger (10 projets/mois)
+
+**Répartition** :
+- 5 projets simples × $0.003 = $0.015
+- 3 projets moyens × $0.005 = $0.015
+- 2 projets complexes × $0.004 = $0.008
+
+**Coût mensuel** : **$0.038 ≈ $0.04** (4 centimes/mois)
+
+---
+
+### Scénario 2 : Usage Modéré (50 projets/mois)
+
+**Répartition** :
+- 25 projets simples × $0.003 = $0.075
+- 15 projets moyens × $0.005 = $0.075
+- 10 projets complexes × $0.004 = $0.040
+
+**Coût mensuel** : **$0.19 ≈ $0.20** (20 centimes/mois)
+
+---
+
+### Scénario 3 : Usage Intensif (200 projets/mois)
+
+**Répartition** :
+- 100 projets simples × $0.003 = $0.30
+- 60 projets moyens × $0.005 = $0.30
+- 40 projets complexes × $0.004 = $0.16
+
+**Coût mensuel** : **$0.76 ≈ $0.80** (80 centimes/mois)
+
+---
+
+### Scénario 4 : Usage Professionnel (500 projets/mois)
+
+**Répartition** :
+- 250 projets simples × $0.003 = $0.75
+- 150 projets moyens × $0.005 = $0.75
+- 100 projets complexes × $0.004 = $0.40
+
+**Coût mensuel** : **$1.90 ≈ $2.00** (2€/mois)
+
+---
+
+## 🆚 Comparaison Tier 1 vs Free vs OpenRouter
+
+### Tableau Comparatif
+
+| Critère | Free Tier | Tier 1 Gemini | OpenRouter |
+|---------|-----------|---------------|------------|
+| **Coût/mois (50 projets)** | 0€ | $0.20 | $5-$10 |
+| **Coût/mois (200 projets)** | ❌ Impossible | $0.80 | $20-$40 |
+| **RPM** | 5 | 10-15 | Illimité |
+| **RPD** | 20 | 100 | Illimité |
+| **Contexte max** | 1M tokens | 2M tokens (Pro) | 200K (Claude) |
+| **Qualité code** | Bonne | Bonne | Excellente |
+| **Modèles disponibles** | 2 (Flash, Robotics) | 10+ | 50+ |
+| **Batch API** | ❌ Non | ✅ Oui | ❌ Non |
+
+---
+
+## 🎯 Nouveaux Modèles Accessibles (Tier 1)
+
+### Modèles Flash (Rapides et Économiques)
+
+| Modèle | Coût Input | Coût Output | Contexte | Usage Recommandé |
+|--------|------------|-------------|----------|------------------|
+| **Gemini 2.0 Flash** | $0.075/1M | $0.30/1M | 1M | JARVIS_Maître, CODEUR, BASE |
+| **Gemini 1.5 Flash** | $0.075/1M | $0.30/1M | 1M | Alternative Flash |
+| **Gemini 3 Flash** | $0.075/1M | $0.30/1M | 1M | Preview features |
+
+---
+
+### Modèles Pro (Qualité Maximale)
+
+| Modèle | Coût Input | Coût Output | Contexte | Usage Recommandé |
+|--------|------------|-------------|----------|------------------|
+| **Gemini 1.5 Pro** | $1.25/1M | $5.00/1M | 2M | VALIDATEUR (projets critiques) |
+| **Gemini 2.5 Pro** | $1.25/1M | $5.00/1M | 2M | Projets complexes |
+
+**Note** : Modèles Pro = **17x plus chers** que Flash, réserver pour cas critiques uniquement.
+
+---
+
+### Modèles Spécialisés
+
+| Modèle | Coût | Contexte | Spécialité |
+|--------|------|----------|-----------|
+| **Gemini Robotics ER 1.5** | $0.075/1M | 1M | Contrôle qualité, détection bugs |
+| **Gemini Computer Use** | Variable | 131K | Automatisation UI |
+| **Gemini Deep Research** | Variable | 131K | Recherche approfondie |
+
+---
+
+## 🔧 Configuration Optimale Tier 1
+
+### Option A : 100% Flash (Économique) ⭐ RECOMMANDÉ
+
+```env
+DEFAULT_PROVIDER=gemini
+
+# Tous les agents sur Flash (rapide + économique)
+JARVIS_MAITRE_PROVIDER=gemini
+JARVIS_MAITRE_MODEL=gemini-2.0-flash
+
+CODEUR_PROVIDER=gemini
+CODEUR_MODEL=gemini-2.0-flash
+
+BASE_PROVIDER=gemini
+BASE_MODEL=gemini-2.0-flash
+
+VALIDATEUR_PROVIDER=gemini
+VALIDATEUR_MODEL=gemini-robotics-er-1.5-preview
+```
+
+**Coût estimé** : $0.20/mois (50 projets)  
+**Quotas** : 100 RPD, 10 RPM  
+**Qualité** : Bonne
+
+---
+
+### Option B : Flash + Pro (Qualité Maximale)
+
+```env
+DEFAULT_PROVIDER=gemini
+
+# Orchestration rapide
+JARVIS_MAITRE_PROVIDER=gemini
+JARVIS_MAITRE_MODEL=gemini-2.0-flash
+
+# Génération code qualité maximale
+CODEUR_PROVIDER=gemini
+CODEUR_MODEL=gemini-1.5-pro
+
+# Validation rapide
+BASE_PROVIDER=gemini
+BASE_MODEL=gemini-2.0-flash
+
+# Contrôle qualité approfondi
+VALIDATEUR_PROVIDER=gemini
+VALIDATEUR_MODEL=gemini-1.5-pro
+```
+
+**Coût estimé** : $1.50/mois (50 projets)  
+**Quotas** : 50 RPD (Pro), 100 RPD (Flash)  
+**Qualité** : Excellente
+
+---
+
+### Option C : Hybride Tier 1 + OpenRouter (Production)
+
+```env
+# Orchestration Gemini (économique)
+JARVIS_MAITRE_PROVIDER=gemini
+JARVIS_MAITRE_MODEL=gemini-2.0-flash
+
+# Workers OpenRouter (qualité maximale)
+CODEUR_PROVIDER=openrouter
+CODEUR_MODEL=anthropic/claude-3.5-sonnet
+
+BASE_PROVIDER=openrouter
+BASE_MODEL=anthropic/claude-3.5-sonnet
+
+VALIDATEUR_PROVIDER=gemini
+VALIDATEUR_MODEL=gemini-1.5-pro
+```
+
+**Coût estimé** : $5-$7/mois (50 projets)  
+**Quotas** : Illimités (OpenRouter)  
+**Qualité** : Maximale (Claude)
+
+---
+
+## 📊 Tableau Récapitulatif Coûts
+
+### Par Scénario d'Usage
+
+| Usage | Projets/mois | Free Tier | Tier 1 Flash | Tier 1 Pro | OpenRouter |
+|-------|--------------|-----------|--------------|------------|------------|
+| **Léger** | 10 | ✅ 0€ | $0.04 | $0.20 | $2-$5 |
+| **Modéré** | 50 | ❌ Impossible | $0.20 | $1.50 | $10-$15 |
+| **Intensif** | 200 | ❌ Impossible | $0.80 | $6.00 | $40-$60 |
+| **Pro** | 500 | ❌ Impossible | $2.00 | $15.00 | $100-$150 |
+
+---
+
+## 💡 Avantages Tier 1 au-delà du Coût
+
+### 1. Quotas Augmentés
+
+**Free Tier** :
+- 5 RPM → Délai 12s entre requêtes
+- 20 RPD → Max 20 projets/jour
+
+**Tier 1** :
+- 10-15 RPM → Délai 4-6s entre requêtes
+- 100 RPD → Max 100 projets/jour
+
+**Impact** : Tests live complets possibles en 1 journée
+
+---
+
+### 2. Accès Batch API
+
+**Batch API** = Traitement asynchrone de multiples requêtes
+
+**Quotas Batch (Tier 1)** :
+- 100 requêtes concurrentes
+- 3M tokens enqueued (Gemini 3 Flash)
+- 10M tokens enqueued (Gemini 2.0 Flash)
+
+**Cas d'usage** :
+- Génération de 10 projets en parallèle
+- Validation de 50 fichiers simultanément
+- Refactorisation massive de codebase
+
+---
+
+### 3. Modèles Avancés
+
+**Free Tier** : 2 modèles (gemini-3-flash-preview, gemini-robotics-er-1.5-preview)
+
+**Tier 1** : 10+ modèles
+- Gemini 2.0 Flash (dernière version)
+- Gemini 1.5 Pro (contexte 2M tokens)
+- Gemini 2.5 Pro (qualité maximale)
+- Gemini Computer Use (automatisation)
+- Gemini Deep Research (recherche)
+
+---
+
+### 4. Contexte Étendu
+
+**Free Tier** : 1M tokens max
+
+**Tier 1 Pro** : 2M tokens max
+
+**Impact** :
+- Projets plus complexes analysables
+- Plus de fichiers lus simultanément
+- Historique conversation plus long
+
+---
+
+## 🎯 Recommandation Finale
+
+### Pour Ton Usage (JARVIS 2.0)
+
+**Profil estimé** :
+- Développement actif : 20-50 projets/mois
+- Tests réguliers : 10-20 projets/mois
+- Production future : 50-200 projets/mois
+
+**Configuration recommandée** : **Option A - 100% Flash Tier 1**
+
+**Raisons** :
+1. **Coût minimal** : $0.20-$0.80/mois (quasi-gratuit)
+2. **Quotas confortables** : 100 RPD, 10 RPM
+3. **Qualité suffisante** : Gemini Flash = bonne qualité code
+4. **Évolutif** : Passage Pro facile si besoin
+5. **Batch API** : Possibilité parallélisation future
+
+---
+
+## 📋 Plan de Migration
+
+### Étape 1 : Activation Tier 1
+
+1. Aller sur https://aistudio.google.com/app/apikey
+2. Cliquer "Upgrade to Tier 1"
+3. Lier compte de facturation Google Cloud
+4. Configurer alerte dépense : $5/mois max
+
+**Durée** : 5-10 minutes
+
+---
+
+### Étape 2 : Mise à Jour Configuration
+
+**Fichier** : `.env`
+
+```env
+# Provider par défaut
+DEFAULT_PROVIDER=gemini
+
+# Providers spécifiques par agent
+JARVIS_MAITRE_PROVIDER=gemini
+CODEUR_PROVIDER=gemini
+BASE_PROVIDER=gemini
+VALIDATEUR_PROVIDER=gemini
+
+# Modèles Gemini Tier 1 optimisés
+GEMINI_MODEL=gemini-2.0-flash
+JARVIS_MAITRE_MODEL=gemini-2.0-flash
+CODEUR_MODEL=gemini-2.0-flash
+BASE_MODEL=gemini-2.0-flash
+VALIDATEUR_MODEL=gemini-robotics-er-1.5-preview
+
+# Clé API Gemini (inchangée)
+GEMINI_API_KEY=<votre_clé>
+```
+
+**Durée** : 1 minute
+
+---
+
+### Étape 3 : Tests de Validation
+
+```bash
+# Nettoyer environnement
+Remove-Item -Path "D:\Coding\TEST\*" -Recurse -Force
+Remove-Item -Path "jarvis_data.db" -Force
+
+# Lancer suite complète tests live
+pytest tests/live/test_live_projects.py -v
+
+# Vérifier coût
+# Aller sur https://console.cloud.google.com/billing
+```
+
+**Durée** : 10-15 minutes
+
+---
+
+### Étape 4 : Monitoring Coût
+
+**Outils** :
+- Console Google Cloud : https://console.cloud.google.com/billing
+- AI Studio Rate Limits : https://aistudio.google.com/rate-limit
+- Logs backend : `backend/logs/mistral_api.log`
+
+**Fréquence** : Hebdomadaire (1er mois), puis mensuelle
+
+---
+
+## 🔒 Sécurité Financière
+
+### Alertes Recommandées
+
+1. **Alerte $1** : Notification email si dépassement
+2. **Alerte $5** : Notification urgente
+3. **Limite $10** : Blocage automatique (optionnel)
+
+**Configuration** : https://console.cloud.google.com/billing/budgets
+
+---
+
+### Crédits Google Cloud
+
+**Nouveaux comptes** : $200 de crédits gratuits (90 jours)
+
+**Impact** :
+- $200 de crédits = ~40,000 projets JARVIS
+- Largement suffisant pour tester Tier 1 gratuitement
+
+---
+
+## 📊 Conclusion Chiffrée
+
+### Coût Réel Tier 1 Gemini pour JARVIS 2.0
+
+| Scénario | Projets/mois | Coût/mois | Coût/projet |
+|----------|--------------|-----------|-------------|
+| **Développement** | 50 | $0.20 | $0.004 |
+| **Production légère** | 200 | $0.80 | $0.004 |
+| **Production intensive** | 500 | $2.00 | $0.004 |
+
+**Coût moyen par projet** : **0.4 centime** (constant)
+
+---
+
+### Comparaison Finale
+
+**Pour 200 projets/mois** :
+
+| Solution | Coût | Quotas | Qualité |
+|----------|------|--------|---------|
+| **Free Tier** | 0€ | ❌ Insuffisant (20 RPD) | Bonne |
+| **Tier 1 Flash** | $0.80 | ✅ Confortable (100 RPD) | Bonne |
+| **Tier 1 Pro** | $6.00 | ✅ Confortable (50 RPD) | Excellente |
+| **OpenRouter** | $40 | ✅ Illimité | Excellente |
+
+**Meilleur rapport qualité/prix** : **Tier 1 Flash** ($0.80/mois)
+
+---
+
+**Date** : 22 février 2026  
+**Recommandation** : Activer Tier 1 Gemini avec configuration 100% Flash  
+**Coût estimé** : $0.20-$2.00/mois selon usage

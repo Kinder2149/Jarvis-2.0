@@ -1,0 +1,244 @@
+"""
+Provider Google Gemini pour JARVIS 2.0
+Utilisé pour JARVIS_Maître (orchestrateur)
+"""
+
+import asyncio
+import json
+import logging
+from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+import google.generativeai as genai
+from google.generativeai.types import FunctionDeclaration, Tool
+
+from backend.ia.providers.base_provider import BaseProvider
+
+logger = logging.getLogger(__name__)
+
+
+class GeminiProvider(BaseProvider):
+    """
+    Provider pour Google Gemini API.
+    
+    Caractéristiques :
+    - Contexte large (1M-2M tokens selon modèle)
+    - Tool calling natif
+    - Multimodal (texte + vision)
+    - Délai adaptatif pour respecter quotas RPM
+    """
+
+    # Variables de classe pour gérer le délai entre requêtes (partagées entre instances)
+    _last_request_time: Optional[datetime] = None
+    _min_delay_seconds: float = 4.0  # 60s / 15 RPM = 4s entre requêtes
+
+    def __init__(self, api_key: str, model: str, **kwargs):
+        super().__init__(api_key, model, **kwargs)
+        
+        genai.configure(api_key=api_key)
+        self.client = genai.GenerativeModel(model)
+        
+        logger.info(f"GeminiProvider initialized: model={model}, min_delay={self._min_delay_seconds}s")
+
+    async def send_message(
+        self,
+        messages: List[Dict[str, str]],
+        functions: Optional[List[Dict]] = None,
+        temperature: float = 0.7,
+        max_tokens: int = 4096,
+    ) -> Dict[str, Any]:
+        """
+        Envoie un message à Gemini avec délai adaptatif pour respecter quotas RPM.
+        
+        Note : Gemini utilise un format de conversation différent.
+        Le premier message "system" est converti en contexte.
+        """
+        self.validate_messages(messages)
+
+        # Délai adaptatif pour respecter quota RPM
+        await self._apply_rate_limit_delay()
+
+        # Convertir messages au format Gemini
+        gemini_messages = self._convert_messages(messages)
+        
+        # Préparer configuration génération
+        generation_config = {
+            "temperature": temperature,
+            "max_output_tokens": max_tokens,
+        }
+
+        # Préparer tools si fonctions fournies
+        tools = None
+        if functions:
+            tools = [Tool(function_declarations=self.format_functions(functions))]
+
+        try:
+            # Gemini utilise generate_content avec historique
+            chat = self.client.start_chat(history=gemini_messages[:-1])
+            
+            response = await chat.send_message_async(
+                gemini_messages[-1]["parts"],
+                generation_config=generation_config,
+                tools=tools,
+            )
+
+            # Extraire contenu et tool calls
+            content = ""
+            tool_calls = []
+            finish_reason = "stop"
+
+            if response.candidates:
+                candidate = response.candidates[0]
+                
+                # Extraire texte
+                if candidate.content.parts:
+                    for part in candidate.content.parts:
+                        if hasattr(part, "text"):
+                            content += part.text
+                        elif hasattr(part, "function_call"):
+                            # Tool call détecté
+                            fc = part.function_call
+                            tool_calls.append({
+                                "id": f"call_{len(tool_calls)}",
+                                "name": fc.name,
+                                "arguments": dict(fc.args),
+                            })
+                            finish_reason = "tool_calls"
+
+            logger.info(
+                f"Gemini response: {len(content)} chars, {len(tool_calls)} tool_calls"
+            )
+
+            return {
+                "content": content,
+                "tool_calls": tool_calls,
+                "finish_reason": finish_reason,
+            }
+
+        except Exception as e:
+            logger.error(f"Gemini API error: {type(e).__name__} - {str(e)}")
+            raise
+
+    def format_functions(self, functions: List[Dict]) -> List[FunctionDeclaration]:
+        """
+        Convertit fonctions JARVIS → format Gemini FunctionDeclaration.
+        
+        Gemini utilise des FunctionDeclaration avec types en MAJUSCULES.
+        """
+        gemini_functions = []
+        
+        for func in functions:
+            # Convertir types JSON → types Gemini
+            parameters = self._convert_schema_to_gemini(func.get("parameters", {}))
+            
+            gemini_func = FunctionDeclaration(
+                name=func["name"],
+                description=func.get("description", ""),
+                parameters=parameters,
+            )
+            gemini_functions.append(gemini_func)
+
+        logger.debug(f"Formatted {len(gemini_functions)} functions for Gemini")
+        return gemini_functions
+
+    def extract_tool_calls(self, response: Dict[str, Any]) -> List[Dict]:
+        """
+        Extrait tool calls de la réponse Gemini.
+        
+        Note : Déjà fait dans send_message, cette méthode est pour compatibilité.
+        """
+        return response.get("tool_calls", [])
+
+    def format_tool_result(self, tool_call_id: str, function_name: str, result: Any) -> Dict:
+        """
+        Formate résultat tool call pour Gemini.
+        
+        Gemini attend un message avec role="function".
+        """
+        return {
+            "role": "function",
+            "parts": [{"function_response": {"name": function_name, "response": result}}],
+        }
+
+    def _convert_messages(self, messages: List[Dict[str, str]]) -> List[Dict]:
+        """
+        Convertit messages JARVIS → format Gemini.
+        
+        Gemini utilise :
+        - role: "user" ou "model" (pas "assistant")
+        - parts: [{"text": "..."}] au lieu de content
+        """
+        gemini_messages = []
+        
+        for msg in messages:
+            role = msg["role"]
+            content = msg["content"]
+
+            # Mapper rôles
+            if role == "assistant":
+                role = "model"
+            elif role == "system":
+                # Gemini n'a pas de role "system", on l'ajoute comme premier message user
+                role = "user"
+            elif role == "tool":
+                # Tool results sont gérés différemment
+                continue
+
+            gemini_messages.append({
+                "role": role,
+                "parts": [{"text": content}],
+            })
+
+        return gemini_messages
+
+    def _convert_schema_to_gemini(self, schema: Dict) -> Dict:
+        """
+        Convertit JSON Schema → Gemini Schema.
+        
+        Différences :
+        - Types en MAJUSCULES (STRING, INTEGER, OBJECT, ARRAY)
+        - Format légèrement différent
+        """
+        if not schema:
+            return {}
+
+        gemini_schema = {"type": schema.get("type", "object").upper()}
+
+        if "properties" in schema:
+            gemini_schema["properties"] = {}
+            for prop_name, prop_schema in schema["properties"].items():
+                gemini_schema["properties"][prop_name] = self._convert_schema_to_gemini(
+                    prop_schema
+                )
+
+        if "description" in schema:
+            gemini_schema["description"] = schema["description"]
+
+        if "required" in schema:
+            gemini_schema["required"] = schema["required"]
+
+        if "items" in schema:
+            gemini_schema["items"] = self._convert_schema_to_gemini(schema["items"])
+
+        return gemini_schema
+
+    async def _apply_rate_limit_delay(self) -> None:
+        """
+        Applique un délai adaptatif pour respecter le quota RPM de Gemini.
+        
+        Calcul : 60s / 15 RPM = 4s entre requêtes minimum
+        Si dernière requête < 4s, attend le temps restant.
+        """
+        if GeminiProvider._last_request_time is not None:
+            elapsed = (datetime.now() - GeminiProvider._last_request_time).total_seconds()
+            
+            if elapsed < self._min_delay_seconds:
+                wait_time = self._min_delay_seconds - elapsed
+                logger.info(
+                    f"GeminiProvider: attente {wait_time:.1f}s pour respecter quota RPM "
+                    f"(15 req/min = {self._min_delay_seconds}s entre requêtes)"
+                )
+                await asyncio.sleep(wait_time)
+        
+        # Enregistrer timestamp de cette requête
+        GeminiProvider._last_request_time = datetime.now()

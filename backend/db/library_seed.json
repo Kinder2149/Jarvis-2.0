@@ -1,0 +1,119 @@
+[
+  {
+    "category": "libraries",
+    "name": "FastAPI",
+    "icon": "⚡",
+    "description": "Framework web Python async — routes, modèles Pydantic, middleware",
+    "tags": ["python", "web", "api"],
+    "agents": ["CODEUR", "BASE"],
+    "content": "# FastAPI — Référence rapide\n\n## Installation\npip install fastapi uvicorn\n\n## App de base\nfrom fastapi import FastAPI, HTTPException\nfrom pydantic import BaseModel\n\napp = FastAPI()\n\nclass Item(BaseModel):\n    name: str\n    price: float\n    description: str | None = None\n\n@app.get(\"/\")\nasync def root():\n    return {\"message\": \"Hello\"}\n\n@app.post(\"/items/\", response_model=Item)\nasync def create_item(item: Item):\n    return item\n\n@app.get(\"/items/{item_id}\")\nasync def get_item(item_id: int):\n    if item_id not in db:\n        raise HTTPException(status_code=404, detail=\"Not found\")\n    return db[item_id]\n\n## Middleware\nfrom fastapi.middleware.cors import CORSMiddleware\n\napp.add_middleware(\n    CORSMiddleware,\n    allow_origins=[\"*\"],\n    allow_methods=[\"*\"],\n    allow_headers=[\"*\"],\n)\n\n## Query params\n@app.get(\"/items/\")\nasync def list_items(skip: int = 0, limit: int = 10, search: str = None):\n    ...\n\n## Fichiers statiques\nfrom fastapi.staticfiles import StaticFiles\napp.mount(\"/static\", StaticFiles(directory=\"static\"), name=\"static\")\n\n## Tests\nfrom fastapi.testclient import TestClient\nclient = TestClient(app)\nresponse = client.get(\"/\")\nassert response.status_code == 200"
+  },
+  {
+    "category": "libraries",
+    "name": "Pytest",
+    "icon": "🧪",
+    "description": "Framework de tests Python — fixtures, parametrize, tmp_path",
+    "tags": ["python", "testing"],
+    "agents": ["CODEUR", "BASE"],
+    "content": "# Pytest — Référence rapide\n\n## Installation\npip install pytest\n\n## Test basique\ndef test_addition():\n    assert 1 + 1 == 2\n\ndef test_exception():\n    import pytest\n    with pytest.raises(ValueError):\n        int(\"not_a_number\")\n\n## Fixtures\nimport pytest\n\n@pytest.fixture\ndef sample_data():\n    return {\"key\": \"value\"}\n\ndef test_with_fixture(sample_data):\n    assert sample_data[\"key\"] == \"value\"\n\n## tmp_path (fichiers temporaires)\ndef test_file(tmp_path):\n    f = tmp_path / \"test.txt\"\n    f.write_text(\"hello\")\n    assert f.read_text() == \"hello\"\n\n## Parametrize\n@pytest.mark.parametrize(\"input,expected\", [\n    (1, 2),\n    (2, 4),\n    (3, 6),\n])\ndef test_double(input, expected):\n    assert input * 2 == expected\n\n## Lancer\npytest tests/ -v --tb=short"
+  },
+  {
+    "category": "libraries",
+    "name": "Pydantic",
+    "icon": "📋",
+    "description": "Validation de données Python — BaseModel, Field, validators",
+    "tags": ["python", "validation"],
+    "agents": ["CODEUR"],
+    "content": "# Pydantic v2 — Référence rapide\n\n## Modèle de base\nfrom pydantic import BaseModel, Field\nfrom typing import Optional\nfrom datetime import datetime\n\nclass User(BaseModel):\n    id: int\n    name: str = Field(min_length=1, max_length=100)\n    email: str\n    age: Optional[int] = None\n    created_at: datetime = Field(default_factory=datetime.now)\n\n## Utilisation\nuser = User(id=1, name=\"Val\", email=\"val@test.com\")\nuser_dict = user.model_dump()\nuser_json = user.model_dump_json()\n\n## Depuis dict\nuser = User.model_validate({\"id\": 1, \"name\": \"Val\", \"email\": \"val@test.com\"})\n\n## Modèle avec champs optionnels (pour update)\nclass UserUpdate(BaseModel):\n    name: Optional[str] = None\n    email: Optional[str] = None\n\n## Validators\nfrom pydantic import field_validator\n\nclass Product(BaseModel):\n    price: float\n\n    @field_validator('price')\n    @classmethod\n    def price_must_be_positive(cls, v):\n        if v <= 0:\n            raise ValueError('Price must be positive')\n        return v"
+  },
+  {
+    "category": "libraries",
+    "name": "aiosqlite",
+    "icon": "🗃️",
+    "description": "SQLite async pour Python — requêtes, transactions",
+    "tags": ["python", "database", "async"],
+    "agents": ["CODEUR"],
+    "content": "# aiosqlite — Référence rapide\n\n## Installation\npip install aiosqlite\n\n## Connexion et requêtes\nimport aiosqlite\n\nasync def example():\n    async with aiosqlite.connect(\"data.db\") as db:\n        db.row_factory = aiosqlite.Row\n\n        # Créer table\n        await db.execute(\"\"\"\n            CREATE TABLE IF NOT EXISTS users (\n                id INTEGER PRIMARY KEY AUTOINCREMENT,\n                name TEXT NOT NULL,\n                email TEXT UNIQUE\n            )\n        \"\"\")\n        await db.commit()\n\n        # Insert\n        await db.execute(\n            \"INSERT INTO users (name, email) VALUES (?, ?)\",\n            (\"Val\", \"val@test.com\")\n        )\n        await db.commit()\n\n        # Select\n        async with db.execute(\"SELECT * FROM users WHERE id = ?\", (1,)) as cursor:\n            row = await cursor.fetchone()\n            if row:\n                print(dict(row))\n\n        # Select all\n        async with db.execute(\"SELECT * FROM users\") as cursor:\n            rows = await cursor.fetchall()\n            return [dict(r) for r in rows]"
+  },
+  {
+    "category": "libraries",
+    "name": "Flutter",
+    "icon": "🐦",
+    "description": "Framework mobile/web — widgets, state, navigation",
+    "tags": ["flutter", "dart", "mobile"],
+    "agents": ["CODEUR"],
+    "content": "# Flutter — Référence rapide\n\n## Nouveau projet\nflutter create my_app\ncd my_app\nflutter run\n\n## Widget Stateless\nclass MyWidget extends StatelessWidget {\n  const MyWidget({super.key});\n\n  @override\n  Widget build(BuildContext context) {\n    return const Text('Hello Flutter');\n  }\n}\n\n## Widget Stateful\nclass Counter extends StatefulWidget {\n  const Counter({super.key});\n  @override\n  State<Counter> createState() => _CounterState();\n}\n\nclass _CounterState extends State<Counter> {\n  int _count = 0;\n\n  @override\n  Widget build(BuildContext context) {\n    return Column(\n      children: [\n        Text('Count: $_count'),\n        ElevatedButton(\n          onPressed: () => setState(() => _count++),\n          child: const Text('Increment'),\n        ),\n      ],\n    );\n  }\n}\n\n## Navigation\nNavigator.push(context, MaterialPageRoute(builder: (_) => NextPage()));\nNavigator.pop(context);\n\n## HTTP\nimport 'package:http/http.dart' as http;\nfinal response = await http.get(Uri.parse('https://api.example.com/data'));"
+  },
+  {
+    "category": "methodologies",
+    "name": "Audit > Plan > Exécution",
+    "icon": "🎯",
+    "description": "Méthodologie principale JARVIS — cycle complet de travail",
+    "tags": ["process", "core"],
+    "agents": ["JARVIS_Maitre"],
+    "content": "# Méthodologie : Audit > Plan > Validation > Exécution > Documentation\n\n## 1. AUDIT\n- Analyser l'existant (code, docs, architecture)\n- Identifier les incohérences, la dette technique\n- Lister les fichiers impactés\n- Produire un rapport factuel\n\n## 2. PLAN\n- Décomposer en étapes ordonnées\n- Pour chaque étape : fichiers, modifications, dépendances\n- Estimer la complexité\n- Identifier les risques\n\n## 3. VALIDATION\n- Présenter le plan à l'utilisateur\n- Attendre validation explicite\n- Ne JAMAIS exécuter sans accord\n\n## 4. EXÉCUTION\n- Suivre le plan étape par étape\n- Un fichier = une modification complète\n- Tester après chaque étape\n- Signaler tout écart par rapport au plan\n\n## 5. DOCUMENTATION\n- Mettre à jour les docs impactées\n- Archiver les docs obsolètes\n- Mettre à jour le CHANGELOG\n- Mettre à jour INDEX.md"
+  },
+  {
+    "category": "methodologies",
+    "name": "Gouvernance documentaire",
+    "icon": "📁",
+    "description": "Règles de gestion des documents — reference/work/history",
+    "tags": ["process", "documentation"],
+    "agents": ["JARVIS_Maitre", "BASE"],
+    "content": "# Gouvernance documentaire\n\n## Arborescence\n- docs/reference/ : documents contractuels validés (source de vérité)\n- docs/work/ : documents en cours (audits, analyses, brouillons)\n- docs/history/ : archive lecture seule (traçabilité)\n- docs/_meta/ : index, règles, templates, changelog\n\n## Règles d'entrée/sortie\n- work -> reference : doc complet + revue + versioning + MAJ index\n- reference -> history : ancienne version, avec indication du remplaçant\n- work -> history : mission terminée ou doc périmé\n- history : pas de modification\n\n## Conventions\n- reference : NOM_SPECIFICATION.md\n- work : YYYYMMDD_NOM.md\n- history : conserver nom original\n\n## Principe clé\n1 sujet = 1 document de référence (éviter redondances)"
+  },
+  {
+    "category": "methodologies",
+    "name": "Revue de code",
+    "icon": "🔍",
+    "description": "Checklist de vérification du code produit par les agents",
+    "tags": ["process", "quality"],
+    "agents": ["BASE"],
+    "content": "# Checklist revue de code\n\n## Structure\n- [ ] Fichiers complets et autonomes\n- [ ] Imports absolus simples (pas de relatifs)\n- [ ] Pas d'artefacts markdown dans le code\n- [ ] Newline en fin de fichier\n\n## Qualité\n- [ ] Pas de code mort\n- [ ] Gestion des erreurs (try/except, if/else)\n- [ ] Types cohérents\n- [ ] Nommage clair et cohérent\n\n## Tests\n- [ ] Tests présents pour chaque module\n- [ ] Cas nominaux couverts\n- [ ] Cas d'erreur couverts\n- [ ] Fixtures utilisées (pas de données en dur)\n\n## Complétude\n- [ ] Tous les fichiers demandés sont présents\n- [ ] requirements.txt à jour\n- [ ] Aucun TODO ou placeholder"
+  },
+  {
+    "category": "prompts",
+    "name": "Délégation au CODEUR",
+    "icon": "➡️",
+    "description": "Template de marqueur pour déléguer du code au CODEUR",
+    "tags": ["inter-agent", "delegation"],
+    "agents": ["JARVIS_Maitre"],
+    "content": "# Template : Délégation au CODEUR\n\n## Format du marqueur\n[DEMANDE_CODE_CODEUR: <instruction complète>]\n\n## Règles\n- L'instruction doit être COMPLÈTE et AUTONOME\n- Lister TOUS les fichiers à produire avec leur chemin\n- Préciser le format de chaque fichier (classe, fonctions, etc.)\n- Préciser les imports et dépendances\n- Max 1 marqueur CODEUR par réponse\n\n## Exemple\n[DEMANDE_CODE_CODEUR: Crée les fichiers suivants :\n- src/models.py : classe User avec id (int), name (str), email (str), méthodes to_dict() et from_dict()\n- src/storage.py : classe JsonStorage avec load() et save(data)\n- tests/test_models.py : tests pytest pour User\n- requirements.txt : pytest\nImports absolus simples, fichiers complets.]"
+  },
+  {
+    "category": "prompts",
+    "name": "Vérification par BASE",
+    "icon": "✅",
+    "description": "Template pour demander une vérification de complétude à BASE",
+    "tags": ["inter-agent", "verification"],
+    "agents": ["JARVIS_Maitre"],
+    "content": "# Template : Vérification par BASE\n\n## Format du marqueur\n[DEMANDE_VALIDATION_BASE: <instruction de vérification>]\n\n## Réponse attendue de BASE\n- COMPLET : tous les fichiers sont présents et conformes\n- INCOMPLET: liste des fichiers manquants ou problèmes\n\n## Exemple\n[DEMANDE_VALIDATION_BASE: Vérifie que le code produit contient bien :\n- src/models.py avec classe User\n- src/storage.py avec classe JsonStorage\n- tests/test_models.py avec au moins 3 tests\n- requirements.txt]"
+  },
+  {
+    "category": "prompts",
+    "name": "Création de projet",
+    "icon": "🆕",
+    "description": "Template de prompt pour demander la création d'un nouveau projet",
+    "tags": ["user", "project"],
+    "agents": ["JARVIS_Maitre"],
+    "content": "# Template : Demande de création de projet\n\n## Structure du prompt\nCrée un projet [NOM] en [LANGAGE] avec :\n- [fichier 1] : [description précise des classes/fonctions]\n- [fichier 2] : [description précise]\n- tests/[test_fichier].py : tests pytest couvrant [cas à tester]\n- requirements.txt : [dépendances]\n\nUtilise des imports absolus simples. Chaque fichier doit être complet et autonome.\n\n## Conseils\n- Être EXPLICITE sur les noms de fichiers et chemins\n- Décrire les classes ET leurs méthodes\n- Préciser les cas d'erreur à gérer\n- Mentionner les dépendances exactes"
+  },
+  {
+    "category": "personal",
+    "name": "Conventions de code",
+    "icon": "📝",
+    "description": "Règles de style et conventions suivies dans tous les projets",
+    "tags": ["style", "rules"],
+    "agents": ["CODEUR", "JARVIS_Maitre", "BASE"],
+    "content": "# Conventions de code — Val C.\n\n## Python\n- Imports absolus simples (pas de from src.xxx)\n- Classes en PascalCase, fonctions/variables en snake_case\n- Docstrings pour les classes et fonctions publiques\n- Type hints sur les signatures de fonctions\n- Fichiers complets et autonomes\n- Newline en fin de fichier\n- Pas de commentaires inutiles\n\n## JavaScript\n- ES6 modules (import/export)\n- camelCase pour variables/fonctions\n- PascalCase pour classes\n- const par défaut, let si nécessaire, jamais var\n- Template literals pour les strings dynamiques\n\n## Structure projet\n- src/ : code source\n- tests/ : tests\n- docs/ : documentation\n- requirements.txt ou package.json à la racine\n\n## Tests\n- pytest pour Python\n- Nommage : test_[module].py\n- Fixtures pour les données de test\n- tmp_path pour les fichiers temporaires"
+  },
+  {
+    "category": "personal",
+    "name": "Stack technique",
+    "icon": "🛠️",
+    "description": "Technologies utilisées et préférées",
+    "tags": ["tech", "preferences"],
+    "agents": ["JARVIS_Maitre", "CODEUR"],
+    "content": "# Stack technique — Val C.\n\n## Backend\n- Python 3.11+\n- FastAPI (web framework)\n- SQLite + aiosqlite (base de données)\n- Pydantic v2 (validation)\n- Gemini AI (LLM)\n\n## Frontend\n- HTML/CSS/JavaScript vanilla\n- Pas de framework JS (pas de React/Vue/Angular)\n- ES6 modules\n- CSS custom properties (variables)\n- Design sombre (dark theme)\n\n## Mobile\n- Flutter / Dart (en apprentissage)\n\n## Outils\n- Git\n- pytest\n- VS Code / Windsurf\n- Windows\n\n## Hébergement\n- Local uniquement (pas de cloud)\n- localhost:8000 pour le backend"
+  }
+]

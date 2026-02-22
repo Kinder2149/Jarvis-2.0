@@ -1,21 +1,28 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8" />
-    <title>JARVIS</title>
-    <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>JARVIS 2.0 - Assistant IA Personnel</title>
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/frontend/css/base.css">
+    <link rel="stylesheet" href="/frontend/css/layout.css">
+    <link rel="stylesheet" href="/frontend/css/chat.css">
+    <link rel="stylesheet" href="/frontend/css/components.css">
+    <link rel="stylesheet" href="/frontend/css/agents.css">
+    <link rel="stylesheet" href="/frontend/css/agents-enhanced.css">
+    <link rel="stylesheet" href="/frontend/css/library.css">
+    <link rel="stylesheet" href="/frontend/css/library-enhanced.css">
 </head>
 <body>
-<div id="chat-container">
-    <div id="messages"></div>
+    <!-- Conteneur principal de l'application -->
+    <div id="app"></div>
 
-    <div id="input-container">
-        <input id="user-input" placeholder="Écris un message..." />
-        <button id="send-btn">Envoyer</button>
-        <button id="new-chat-btn">Nouvelle conversation</button>
-    </div>
-</div>
-
-<script src="script.js"></script>
+    <!-- Application principale (ES6 Modules) -->
+    <script type="module" src="/frontend/app.js"></script>
 </body>
 </html>
