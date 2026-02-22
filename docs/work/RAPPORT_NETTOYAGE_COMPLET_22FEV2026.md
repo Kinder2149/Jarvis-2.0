@@ -82,7 +82,7 @@
 
 **Configuration finale** :
 ```env
-GEMINI_API_KEY=AIzaSyCmhnxKvTM7cIxdEAmnlucQDCV7r48FI6g
+GELINI_API_KEY=****
 GEMINI_MODEL=gemini-2.5-pro
 
 JARVIS_MAITRE_PROVIDER=gemini
