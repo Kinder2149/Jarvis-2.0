@@ -1,19 +1,20 @@
 # Contexte Projet JARVIS 2.0 - Pour IA Externe
 
 **Statut** : META  
-**Version** : 2.0  
-**Date** : 2026-02-12  
+**Version** : 2.1  
+**Date** : 2026-02-22  
 **Objectif** : Fournir à une IA externe toutes les informations nécessaires pour comprendre et améliorer le projet
 
 ---
 
 ## 📋 Résumé Exécutif
 
-**JARVIS 2.0** est une application web conversationnelle avec gestion de projets, permettant de dialoguer avec des agents IA basés sur Mistral AI.
+**JARVIS 2.0** est une application web conversationnelle avec gestion de projets, permettant de dialoguer avec des agents IA pour générer du code automatiquement.
 
-**État actuel** : Fonctionnel — 2 agents distincts, persistance SQLite, système de projets  
-**Phase** : Post-migration architecture 2 agents  
-**Prochaine étape** : Orchestration multi-agents
+**État actuel** : ✅ Opérationnel — 4 agents, orchestration fonctionnelle, Library de documentation  
+**Provider** : Gemini (Google AI Studio) — Migration depuis Mistral AI  
+**Phase** : Production — Génération de code validée  
+**Prochaine étape** : Optimisation qualité code avec enrichissement Library
 
 ---
 
@@ -27,9 +28,22 @@ Créer un assistant IA personnel orchestrant des agents spécialisés pour gére
 
 ### Stack
 - **Backend** : FastAPI (Python) + SQLite (aiosqlite)
-- **Frontend** : HTML/CSS/JavaScript vanilla
-- **IA** : Mistral AI Agent API (beta.conversations) — 2 Agent IDs distincts
-- **Dépendances** : fastapi, uvicorn, python-dotenv, mistralai, aiosqlite
+- **Frontend** : HTML/CSS/JavaScript vanilla (SPA)
+- **IA** : Gemini (Google AI Studio) — 4 agents spécialisés
+- **Dépendances** : fastapi, uvicorn, python-dotenv, google-generativeai, aiosqlite
+
+### Agents Spécialisés
+1. **JARVIS_Maître** : Orchestrateur principal (délégation, coordination)
+2. **CODEUR** : Génération de code (fichiers Python, tests, requirements)
+3. **VALIDATEUR** : Validation automatique du code généré
+4. **BASE** : Analyse et rapports (structure projet, fichiers)
+
+### Library de Documentation
+- **13 documents** : Patterns, conventions, méthodologies, librairies
+- **Catégories** : libraries (FastAPI, Pytest, Pydantic), methodologies (TDD, Clean Code), personal (Stack technique, Conventions)
+- **Peuplement** : Automatique au démarrage depuis `backend/db/library_seed.json`
+- **API** : `/api/library` (GET) pour accès frontend
+- **Functions** : `get_library_document()`, `get_library_list()` disponibles pour agents
 
 ### Structure des Répertoires
 ```

@@ -148,10 +148,19 @@ class BaseAgent:
                     raise InvalidRuntimeMessageError(
                         f"messages[{idx}].role must be 'user', 'assistant', 'tool', or 'system'"
                     )
-                if not isinstance(content, str) or not content.strip():
-                    raise InvalidRuntimeMessageError(
-                        f"messages[{idx}].content must be a non-empty string"
-                    )
+                
+                # Permettre content vide pour assistant (Gemini peut retourner "" avec tool_calls)
+                # Mais exiger content non vide pour user, system, tool
+                if role in ("user", "system", "tool"):
+                    if not isinstance(content, str) or not content.strip():
+                        raise InvalidRuntimeMessageError(
+                            f"messages[{idx}].content must be a non-empty string"
+                        )
+                else:  # role == "assistant"
+                    if not isinstance(content, str):
+                        raise InvalidRuntimeMessageError(
+                            f"messages[{idx}].content must be a string"
+                        )
 
                 validated_messages.append({"role": role, "content": content})
 

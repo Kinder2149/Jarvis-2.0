@@ -305,12 +305,15 @@ class Chat {
             this.hideTypingIndicator();
 
             if (response.ok) {
-                this.addMessage('assistant', data.response);
-                this.messages.push({ 
-                    role: 'assistant', 
-                    content: data.response, 
-                    timestamp: new Date().toISOString() 
-                });
+                // Ne pas ajouter de message si la réponse est vide (Gemini peut retourner "" avec tool_calls)
+                if (data.response && data.response.trim()) {
+                    this.addMessage('assistant', data.response);
+                    this.messages.push({ 
+                        role: 'assistant', 
+                        content: data.response, 
+                        timestamp: new Date().toISOString() 
+                    });
+                }
             } else {
                 this.addErrorMessage(data.detail || 'Erreur lors de l\'envoi du message.');
             }

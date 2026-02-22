@@ -326,6 +326,63 @@ Chaque entrée suit le format :
 
 ---
 
+### 2026-02-22 - Implémentation Library + Régression Prompt Enrichi
+
+#### Implémentation Library Seed
+- **Fichier** : `backend/db/library_seed.json`
+- **Action** : CREATED
+- **Description** : 13 documents de référence (libraries, methodologies, personal) pour enrichir le contexte des agents
+
+- **Fichier** : `backend/db/database.py`
+- **Action** : UPDATED
+- **Description** : Ajout méthode `seed_library_if_empty()` pour peuplement automatique au démarrage
+
+- **Fichier** : `backend/app.py`
+- **Action** : UPDATED
+- **Description** : Appel `seed_library_if_empty()` dans lifespan startup
+
+- **Fichier** : `frontend/js/views/library-enhanced.js`
+- **Action** : UPDATED
+- **Description** : Chargement dynamique depuis API `/api/library` (suppression données hardcodées)
+
+- **Statut** : ✅ Library opérationnelle (13 documents peuplés, API fonctionnelle, frontend dynamique)
+
+#### Tentative Enrichissement Prompt JARVIS_Maître
+- **Fichier** : `config_agents/JARVIS_MAITRE.md`
+- **Action** : UPDATED (v4.0 → v4.1) puis ROLLBACK (v4.1 → v4.0)
+- **Description** : Tentative d'enrichissement automatique avec consultation Library obligatoire avant délégation
+- **Résultat** : ❌ Régression critique — boucle infinie de function calls, réponses vides systématiques (0 chars)
+- **Solution** : Rollback immédiat vers v4.0 (délégation simple sans Library obligatoire)
+
+#### Corrections Validation et Frontend
+- **Fichier** : `backend/agents/base_agent.py`
+- **Action** : UPDATED
+- **Description** : Autoriser `content` vide pour messages `assistant` (Gemini peut retourner "" avec tool_calls)
+
+- **Fichier** : `frontend/js/components/chat.js`
+- **Action** : UPDATED
+- **Description** : Filtrage réponses vides avant ajout à l'historique
+
+- **Fichier** : `backend/ia/providers/gemini_provider.py`
+- **Action** : UPDATED
+- **Description** : Ajout logs détaillés si réponse vide (debug)
+
+#### Documentation et Archivage
+- **Document** : `docs/history/20260222_REGRESSION_LIBRARY_ENRICHISSEMENT.md`
+- **Action** : CREATED
+- **Description** : Analyse complète de la régression (cause, solution, leçons apprises, recommandations)
+
+- **Documents archivés** : 3 documents work → history
+  - `IMPLEMENTATION_LIBRARY_SEED_22FEV2026.md` → `20260222_IMPLEMENTATION_LIBRARY_SEED.md`
+  - `ENRICHISSEMENT_PROMPT_JARVIS_MAITRE_22FEV2026.md` → `20260222_ENRICHISSEMENT_PROMPT_JARVIS_MAITRE.md`
+  - `RAPPORT_TESTS_LIVE_22FEV2026.md` → `20260222_RAPPORT_TESTS_LIVE.md`
+
+#### Tests Live
+- **Résultat** : ✅ Système stable après rollback v4.0
+- **Statut** : Délégation CODEUR opérationnelle, génération de code fonctionnelle
+
+---
+
 ## À Venir
 
 *Les prochaines modifications seront documentées ici*

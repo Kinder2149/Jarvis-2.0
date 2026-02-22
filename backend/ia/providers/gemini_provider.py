@@ -106,8 +106,15 @@ class GeminiProvider(BaseProvider):
                             finish_reason = "tool_calls"
 
             logger.info(
-                f"Gemini response: {len(content)} chars, {len(tool_calls)} tool_calls"
+                f"Gemini response: {len(content)} chars, {len(tool_calls)} tool_calls, finish_reason={finish_reason}"
             )
+            
+            # Log détaillé si réponse vide
+            if not content and not tool_calls:
+                logger.warning(f"Gemini returned empty response! Response object: {response}")
+                if response.candidates:
+                    logger.warning(f"Candidate finish_reason: {response.candidates[0].finish_reason}")
+                    logger.warning(f"Candidate content parts: {response.candidates[0].content.parts}")
 
             return {
                 "content": content,
